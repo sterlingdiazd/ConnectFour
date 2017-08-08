@@ -1,6 +1,7 @@
 package com.altice.sterlingdiazd.connectfour;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +15,11 @@ import java.util.ArrayList;
  * Created by Sterling on 7/15/2017.
  */
 
-public class SquareAdapter extends ArrayAdapter<Square> implements View.OnClickListener
+public class SquareAdapter extends ArrayAdapter<Position>
 {
-    private Square square;
+    private Position boardPosition;
 
-    public SquareAdapter(Context context, ArrayList<Square> board)
+    public SquareAdapter(Context context, ArrayList<Position> board)
     {
         super(context, 0, board);
     }
@@ -26,19 +27,21 @@ public class SquareAdapter extends ArrayAdapter<Square> implements View.OnClickL
     @Override public View getView(int position, View convertView, ViewGroup parent)
     {
 
-        square = getItem(position);
+        boardPosition = getItem(position);
 
         if(convertView == null)
         {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.square_item, parent, false);
+            changeBackGround(convertView, R.drawable.button_square);
         }
 
         return convertView;
     }
 
-    @Override public void onClick(View v)
+    public void changeBackGround(View view, int drawableResource)
     {
-        Toast.makeText(v.getContext(), "Position: " + square.getRow() + "x" + square.getColumn(), Toast.LENGTH_LONG).show();
+        Drawable drawable = view.getContext().getResources().getDrawable(drawableResource);
+        view.setBackground(drawable);
 
     }
 }

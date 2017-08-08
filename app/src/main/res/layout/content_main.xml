@@ -8,12 +8,13 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/app_bar_main"
-        tools:context="com.altice.sterlingdiazd.connectfour.MainActivity">
+        tools:context="com.altice.sterlingdiazd.connectfour.MainActivity" android:baselineAligned="false">
 
     <GridView
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:gravity="center" android:horizontalSpacing="10dp"
             android:numColumns="7" android:stretchMode="columnWidth" android:verticalSpacing="10dp"
-            android:id="@+id/gridViewBoard"/>
+            android:id="@+id/gridViewBoard" android:soundEffectsEnabled="true" android:layoutMode="opticalBounds"
+            android:layout_weight="1" android:layout_margin="10dp"/>
 </LinearLayout>

@@ -6,6 +6,7 @@
 
     <ImageView
             android:layout_width="match_parent"
-            android:layout_height="0dp" android:src="@mipmap/ic_launcher"
-            android:id="@+id/imageViewSquare" android:layout_weight="1" android:contentDescription="@string/square_icon"/>
+            android:layout_height="40dp"
+            android:id="@+id/imageViewSquare" android:layout_weight="1"
+            android:contentDescription="@string/square_icon"/>
 </LinearLayout>

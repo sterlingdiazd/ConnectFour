@@ -1,8 +1,6 @@
 package com.altice.sterlingdiazd.connectfour;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,17 +10,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.GridView;
-import android.widget.ListView;
+import android.widget.*;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener
+        implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener
 {
     private GridView gridViewBoard;
+    private SquareAdapter squareAdapter;
+
+    boolean isFirstPlayer = true;
+    private Game game;
+    private GameRules gameRules;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 /*
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
         {
@@ -54,16 +55,20 @@ public class MainActivity extends AppCompatActivity
 
         gridViewBoard = (GridView) findViewById(R.id.gridViewBoard);
 
-        ArrayList<Square> board = new ArrayList<Square>();
+        game = new Game();
+        gameRules = new GameRules();
 
-        for(int columns = 0; columns < 6; columns++)
+        ArrayList<Position> board = new ArrayList<Position>();
+
+        for(int columns = 1; columns <= Game.columnSize; columns++)
         {
-            for(int rows = 0; rows < 7; rows++)
-            board.add(new Square( null, String.valueOf(columns), String.valueOf(rows)));
+            for(int rows = 1; rows <= Game.rowSize; rows++)
+            board.add(new Position(columns, rows));
         }
 
-        SquareAdapter squareAdapter = new SquareAdapter(this, board);
-        gridViewBoard .setAdapter(squareAdapter);
+        squareAdapter = new SquareAdapter(this, board);
+        gridViewBoard.setAdapter(squareAdapter);
+        gridViewBoard.setOnItemClickListener(this);
     }
 
     @Override
@@ -140,5 +145,49 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+    {
+        try
+        {
+            Position clickedPosition = (Position) parent.getItemAtPosition(position);
+
+            Toast.makeText(view.getContext(), "Position: " + clickedPosition.getRow() + "x" + clickedPosition.getColumn(),Toast.LENGTH_LONG).show();
+
+            Move move = new Move();
+            move.setPosition(clickedPosition);
+            move.setFirstPlayer(isFirstPlayer);
+
+
+
+            if(!gameRules.checkIfBusy(game, move.getPosition()))
+            {
+                boolean validMove = gameRules.validatePosition(game, move);
+                if(validMove == false)
+                {
+                    gameRules.modifyMove(game, move);
+
+                }
+                if(isFirstPlayer)
+                {
+                    squareAdapter.changeBackGround(view, R.drawable.button_player_one);
+                } else {
+                    squareAdapter.changeBackGround(view, R.drawable.button_player_two);
+                }
+                game.getMoveList().add(move);
+            } else {
+                Toast.makeText(this, "Your Opponent already played here! Try another position", Toast.LENGTH_SHORT).show();
+            }
+
+
+
+
+            isFirstPlayer = !isFirstPlayer;
+           // Square square = new Square("0", "1","1");
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 }
