@@ -1,22 +1,34 @@
 package com.altice.sterlingdiazd.connectfour;
 
+import android.content.Context;
+import android.media.MediaPlayer;
+import android.widget.GridView;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Sterling on 8/8/2017.
+ * Created by Sterling on 8/10/2017.
  */
 
-public class Game
+class Game
 {
-    List<Move> moveList;
-    public static int columnSize = 7;
-    public static int rowSize = 6;
+    private static final Game ourInstance = new Game();
+    private List<Move> moveList;
+    static int columnSize = 7;
+    static int rowSize    = 6;
+    public static int timeToPlayAgain    = 1000;
 
+    private int positionOfView;
 
-    public Game()
+    private Game()
     {
         moveList = new ArrayList<Move>();
+    }
+
+    public static Game getInstance()
+    {
+        return ourInstance;
     }
 
     public List<Move> getMoveList()
@@ -27,5 +39,24 @@ public class Game
     public void setMoveList(List<Move> moveList)
     {
         this.moveList = moveList;
+    }
+
+    public int getPositionOfView()
+    {
+        return positionOfView;
+    }
+
+    public void setPositionOfView(int positionOfView)
+    {
+        this.positionOfView = positionOfView;
+    }
+
+    static void cleanBoard(Context context, GridView gridViewBoard, SquareAdapter squareAdapter)
+    {
+        MediaPlayer.create(context, R.raw.clean_board).start();
+        Game.getInstance().getMoveList().clear();
+        gridViewBoard.setAdapter(squareAdapter);
+        gridViewBoard.refreshDrawableState();
+        gridViewBoard.setEnabled(true);
     }
 }

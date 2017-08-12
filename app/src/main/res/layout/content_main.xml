@@ -8,13 +8,42 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/app_bar_main"
-        tools:context="com.altice.sterlingdiazd.connectfour.MainActivity" android:baselineAligned="false">
+        tools:context="com.altice.sterlingdiazd.connectfour.MainActivity" android:baselineAligned="false"
+        android:orientation="vertical" android:background="#eee">
 
-    <GridView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:gravity="center" android:horizontalSpacing="10dp"
-            android:numColumns="7" android:stretchMode="columnWidth" android:verticalSpacing="10dp"
-            android:id="@+id/gridViewBoard" android:soundEffectsEnabled="true" android:layoutMode="opticalBounds"
-            android:layout_weight="1" android:layout_margin="10dp"/>
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:background="#ddd"
+            android:padding="5dp"
+            android:gravity="center">
+        <Button
+                android:text="@string/play_again"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/buttonPlayAgain"
+                android:background="@drawable/button_player_one" android:layout_margin="10dp"/>
+        <Button
+                android:text="@string/clean_board"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/buttonCleanBoard"
+                android:background="@drawable/button_square" android:layout_margin="10dp"/>
+        <Button
+                android:text="@string/exit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/buttonExit"
+                android:background="@drawable/button_exit" android:layout_margin="10dp"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:background="#eee">
+        <GridView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:numColumns="7" android:stretchMode="columnWidth"
+                android:id="@+id/gridViewBoard" android:soundEffectsEnabled="true" android:layoutMode="opticalBounds"
+                android:horizontalSpacing="10dp" android:verticalSpacing="10dp"
+                android:layout_margin="10dp" android:elevation="1dp"/>
+    </LinearLayout>
 </LinearLayout>

@@ -1,5 +1,9 @@
 package com.altice.sterlingdiazd.connectfour;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -12,17 +16,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.*;
 
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener
+        implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener, DialogInterface.OnClickListener, View.OnClickListener
 {
     private GridView gridViewBoard;
     private SquareAdapter squareAdapter;
-
     boolean isFirstPlayer = true;
-    private Game game;
     private GameRules gameRules;
+    private Activity activity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -31,42 +32,23 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-/*
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-*/
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
+        activity = MainActivity.this;
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         gridViewBoard = (GridView) findViewById(R.id.gridViewBoard);
+        findViewById(R.id.buttonPlayAgain).setOnClickListener(this);
+        findViewById(R.id.buttonCleanBoard).setOnClickListener(this);
+        findViewById(R.id.buttonExit).setOnClickListener(this);
 
-        game = new Game();
-        gameRules = new GameRules();
-
-        ArrayList<Position> board = new ArrayList<Position>();
-
-        for(int columns = 1; columns <= Game.columnSize; columns++)
-        {
-            for(int rows = 1; rows <= Game.rowSize; rows++)
-            board.add(new Position(columns, rows));
-        }
-
-        squareAdapter = new SquareAdapter(this, board);
+        gameRules = new GameRules(MainActivity.this);
+        squareAdapter = new SquareAdapter(this, gameRules.createBoard());
         gridViewBoard.setAdapter(squareAdapter);
         gridViewBoard.setOnItemClickListener(this);
     }
@@ -151,43 +133,98 @@ public class MainActivity extends AppCompatActivity
     {
         try
         {
+            MediaPlayer.create(this, R.raw.clicked).start();
             Position clickedPosition = (Position) parent.getItemAtPosition(position);
 
-            Toast.makeText(view.getContext(), "Position: " + clickedPosition.getRow() + "x" + clickedPosition.getColumn(),Toast.LENGTH_LONG).show();
-
             Move move = new Move();
-            move.setPosition(clickedPosition);
+            move.setViewPosition(position);
+            move.setPosition(new Position(clickedPosition.getRow(), clickedPosition.getColumn()));
             move.setFirstPlayer(isFirstPlayer);
 
+            String validationMessage = gameRules.playPosition(move);
 
-
-            if(!gameRules.checkIfBusy(game, move.getPosition()))
+            if(validationMessage.equalsIgnoreCase(GameRules.validMove))
             {
-                boolean validMove = gameRules.validatePosition(game, move);
-                if(validMove == false)
-                {
-                    gameRules.modifyMove(game, move);
-
-                }
+                View view1 = parent.getChildAt(move.getViewPosition());
                 if(isFirstPlayer)
                 {
-                    squareAdapter.changeBackGround(view, R.drawable.button_player_one);
+                    squareAdapter.changeBackGround(view1, R.drawable.button_player_one);
                 } else {
-                    squareAdapter.changeBackGround(view, R.drawable.button_player_two);
+                    squareAdapter.changeBackGround(view1, R.drawable.button_player_two);
                 }
-                game.getMoveList().add(move);
-            } else {
-                Toast.makeText(this, "Your Opponent already played here! Try another position", Toast.LENGTH_SHORT).show();
+                isFirstPlayer = !isFirstPlayer;
+            }
+            if(validationMessage.equalsIgnoreCase(GameRules.usedPosition))
+            {
+                Toast.makeText(this, getResources().getString(R.string.used_position), Toast.LENGTH_LONG).show();
             }
 
+            WinningMove winningMove = gameRules.checkForWinningMove(move);
+            if(winningMove.isWon())
+            {
+                Toast.makeText(this, winningMove.getWonMessage(), Toast.LENGTH_LONG).show();
 
-
-
-            isFirstPlayer = !isFirstPlayer;
-           // Square square = new Square("0", "1","1");
-        }catch(Exception e)
+                MediaPlayer.create(this, R.raw.win).start();
+                gridViewBoard.setEnabled(false);
+                playAgain(activity.getResources().getString(R.string.win_again_message));
+            }
+        }
+        catch(Exception e)
         {
             e.printStackTrace();
+        }
+    }
+
+    @Override public void onClick(DialogInterface dialog, int which)
+    {
+        String message;
+        switch (which)
+        {
+            case DialogInterface.BUTTON_POSITIVE:
+                MediaPlayer.create(activity, R.raw.win).start();
+                message =activity.getResources().getString(R.string.ready_message);
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                Game.cleanBoard(MainActivity.this, gridViewBoard, squareAdapter);
+                break;
+            case DialogInterface.BUTTON_NEGATIVE:
+                message =activity.getResources().getString(R.string.lose_again_message);
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                Game.cleanBoard(MainActivity.this, gridViewBoard, squareAdapter);
+                finish();
+                break;
+        }
+
+    }
+
+    public void playAgain(String playMessage)
+    {
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
+                .setTitle(playMessage)
+                .setMessage(activity.getResources().getString(R.string.try_again_message))
+                .setPositiveButton(activity.getResources().getString(R.string.yes), this)
+                .setNegativeButton(activity.getResources().getString(R.string.no), this)
+                .create();
+        alertDialog.show();
+    }
+
+
+    @Override public void onClick(View v)
+    {
+        switch (v.getId())
+        {
+            case R.id.buttonPlayAgain:
+                String playMessage = activity.getResources().getString(R.string.play_again);
+                playAgain(playMessage);
+                break;
+            case R.id.buttonCleanBoard:
+                Game.cleanBoard(MainActivity.this, gridViewBoard, squareAdapter);
+                break;
+            case R.id.buttonExit:
+                Toast.makeText(this, activity.getResources().getString(R.string.lose_again_message), Toast.LENGTH_LONG).show();
+                Game.cleanBoard(MainActivity.this, gridViewBoard, squareAdapter);
+                finish();
+                break;
+
         }
     }
 }
